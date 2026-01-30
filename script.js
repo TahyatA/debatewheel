@@ -35,55 +35,123 @@ document.getElementById("spinBtn").addEventListener("click", spinWheel);
 
 
 /* -----------------------------
-   7-Minute Timer
+   Shared beep sound
 ------------------------------ */
 
-let timerInterval = null;
-let totalSeconds = 7 * 60;
+function beep() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
 
-function updateDisplay() {
-  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
-  const seconds = String(totalSeconds % 60).padStart(2, "0");
-  document.getElementById("timerDisplay").textContent = `${minutes}:${seconds}`;
+  osc.frequency.value = 600;
+  gain.gain.value = 0.1;
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.start();
+  osc.stop(ctx.currentTime + 0.2);
 }
 
-function startSevenMinuteTimer() {
-  if (timerInterval) return;
 
-  const status = document.getElementById("timerStatus");
-  status.textContent = "";
+/* -----------------------------
+   15-Minute Prep Timer
+------------------------------ */
 
-  timerInterval = setInterval(() => {
-    totalSeconds--;
-    updateDisplay();
+let prepInterval = null;
+let prepSeconds = 15 * 60;
 
-    if (totalSeconds === 6 * 60) status.textContent = "1 minute has passed.";
-    if (totalSeconds === 2 * 60) status.textContent = "5 more minutes have passed.";
-    if (totalSeconds === 60) status.textContent = "Final minute!";
+function updatePrepDisplay() {
+  const m = String(Math.floor(prepSeconds / 60)).padStart(2, "0");
+  const s = String(prepSeconds % 60).padStart(2, "0");
+  document.getElementById("prepDisplay").textContent = `${m}:${s}`;
+}
 
-    if (totalSeconds <= 0) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-      status.textContent = "Time's up!";
+function startPrep() {
+  if (prepInterval) return;
+
+  prepInterval = setInterval(() => {
+    prepSeconds--;
+    updatePrepDisplay();
+
+    if (prepSeconds <= 0) {
+      clearInterval(prepInterval);
+      prepInterval = null;
+      document.getElementById("prepStatus").textContent = "Prep time over!";
+      beep();
     }
   }, 1000);
 }
 
-function stopTimer() {
-  clearInterval(timerInterval);
-  timerInterval = null;
+function stopPrep() {
+  clearInterval(prepInterval);
+  prepInterval = null;
 }
 
-function resetTimer() {
-  stopTimer();
-  totalSeconds = 7 * 60;
-  updateDisplay();
-  document.getElementById("timerStatus").textContent = "";
+function resetPrep() {
+  stopPrep();
+  prepSeconds = 15 * 60;
+  updatePrepDisplay();
+  document.getElementById("prepStatus").textContent = "";
 }
 
-document.getElementById("startTimerBtn").addEventListener("click", startSevenMinuteTimer);
-document.getElementById("stopTimerBtn").addEventListener("click", stopTimer);
-document.getElementById("resetTimerBtn").addEventListener("click", resetTimer);
+document.getElementById("startPrepBtn").addEventListener("click", startPrep);
+document.getElementById("stopPrepBtn").addEventListener("click", stopPrep);
+document.getElementById("resetPrepBtn").addEventListener("click", resetPrep);
 
-// Initialize display
-updateDisplay();
+updatePrepDisplay();
+
+
+/* -----------------------------
+   7-Minute Speaking Timer
+------------------------------ */
+
+let speakInterval = null;
+let speakSeconds = 7 * 60;
+
+function updateSpeakDisplay() {
+  const m = String(Math.floor(speakSeconds / 60)).padStart(2, "0");
+  const s = String(speakSeconds % 60).padStart(2, "0");
+  document.getElementById("speakDisplay").textContent = `${m}:${s}`;
+}
+
+function startSpeak() {
+  if (speakInterval) return;
+
+  const status = document.getElementById("speakStatus");
+  status.textContent = "";
+
+  speakInterval = setInterval(() => {
+    speakSeconds--;
+    updateSpeakDisplay();
+
+    if (speakSeconds === 6 * 60) status.textContent = "1 minute has passed.";
+    if (speakSeconds === 2 * 60) status.textContent = "5 more minutes have passed.";
+    if (speakSeconds === 60) status.textContent = "Final minute!";
+
+    if (speakSeconds <= 0) {
+      clearInterval(speakInterval);
+      speakInterval = null;
+      status.textContent = "Time's up!";
+      beep();
+    }
+  }, 1000);
+}
+
+function stopSpeak() {
+  clearInterval(speakInterval);
+  speakInterval = null;
+}
+
+function resetSpeak() {
+  stopSpeak();
+  speakSeconds = 7 * 60;
+  updateSpeakDisplay();
+  document.getElementById("speakStatus").textContent = "";
+}
+
+document.getElementById("startSpeakBtn").addEventListener("click", startSpeak);
+document.getElementById("stopSpeakBtn").addEventListener("click", stopSpeak);
+document.getElementById("resetSpeakBtn").addEventListener("click", resetSpeak);
+
+updateSpeakDisplay();
